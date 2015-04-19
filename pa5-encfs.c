@@ -292,19 +292,28 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 		    struct fuse_file_info *fi)
 {
 	fullpath(&path);
-	int fd;
+	//int fd;
 	int res;
-
+	FILE *fd;
+	FILE *f2;
+	
 	(void) fi;
-	fd = open(fullPath, O_RDONLY);
-	if (fd == -1)
-		return -errno;
+	fd = fopen(fullPath, "rb+");
+	if(!fd)
+			return -errno;
 
-	res = pread(fd, buf, size, offset);
+	char * membuf;	
+
+ 	f2 = open_memstream(&membuf, &size);
+ 	do_crypt(fd,f2,0,"hello");
+
+	res = fread(buf,1,size,f2);
+
 	if (res == -1)
 		res = -errno;
 
-	close(fd);
+	fclose(fd);
+	fclose(f2);
 	return res;
 }
 
