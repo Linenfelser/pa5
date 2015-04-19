@@ -24,6 +24,7 @@
 
 #define FUSE_USE_VERSION 28
 #define HAVE_SETXATTR
+#define _GNU_SOURCE 
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -44,7 +45,12 @@
 #include <sys/time.h>
 #ifdef HAVE_SETXATTR
 #include <sys/xattr.h>
-#include <stdlib.h>        
+#include <stdlib.h>
+#include "aes-crypt.h"
+#include <ctype.h>
+#include <limits.h>
+
+       
 #endif
 
 char *mountPath;
@@ -302,23 +308,36 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 	return res;
 }
 
-static int xmp_write(const char *path, const char *buf, size_t size,
-		     off_t offset, struct fuse_file_info *fi)
+static int xmp_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	fullpath(&path);
-	int fd;
+	//int fd;
 	int res;
-
+	FILE *fd;
+	FILE *f2;
+	
 	(void) fi;
-	fd = open(fullPath, O_WRONLY);
-	if (fd == -1)
-		return -errno;
+	fd = fopen(fullPath, "wb+");
+	if(!fd)
+			return -errno;
 
-	res = pwrite(fd, buf, size, offset);
+	char * membuf;	
+
+	//FILE* f = fopen(fullPath, "rb");
+ 	f2 = open_memstream(&membuf, &size);
+	res = fwrite(buf,1,size,f2);
+
+	do_crypt(f2,fd,1,"hello");
+
+    /*open_memstream*/
+
+	//res = pwrite(fd, buf, size, offset);
 	if (res == -1)
 		res = -errno;
 
-	close(fd);
+	fclose(fd);
+	//fclose(f);
+	fclose(f2);
 	return res;
 }
 
