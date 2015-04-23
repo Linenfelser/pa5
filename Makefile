@@ -63,6 +63,7 @@ aes-crypt.o: aes-crypt.c aes-crypt.h
 	$(CC) $(CFLAGS) $<
 
 clean:
+	rm -f pa5-encfs
 	rm -f $(FUSE_EXAMPLES)
 	rm -f $(XATTR_EXAMPLES)
 	rm -f $(OPENSSL_EXAMPLES)

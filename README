@@ -115,3 +115,11 @@ Get/Read attribute from a file
 
 Remove attribute from a file
  ./xattr-util -r <Attr Name> <File Path>
+
+
+Mounting on specified directory
+./pa5-encfs <"encription key"> <directory to mirror> <directory to mount to>
+./pa5-encfs "hello" ~/Desktop dir
+
+
+
