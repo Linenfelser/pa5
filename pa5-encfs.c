@@ -53,7 +53,6 @@
 
 #define ENCRYPT 1
 #define DECRYPT 0
-#define PASS -1
 
 
 char *encryptKey;
@@ -338,13 +337,13 @@ static int encfs_read(const char *path, char *buf, size_t size, off_t offset,
 		    struct fuse_file_info *fi)
 {
 	fullpath(&path);
+	int operation = -1;
 	//int fd;
 	int res;
 	FILE *fd;
 	FILE *f2;
 	char *membuf;
 	char attr_value[8];
-	int operation = PASS;
 	ssize_t attr_length; 
 	(void) fi;
 	(void) offset;
@@ -386,7 +385,7 @@ static int encfs_read(const char *path, char *buf, size_t size, off_t offset,
 static int encfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	fullpath(&path);
-	int operation = PASS;
+	int operation = -1;
 	int res;
 	FILE *fd; //o_stream
 	FILE *f2; //i_stream
@@ -415,7 +414,7 @@ static int encfs_write(const char *path, const char *buf, size_t size, off_t off
  	}
 
 
- 	if(attr_length != -1)
+ 	if(attr_length > 3)
  	//if(attr_length > 3) //if there is an attribute value
  	{
  		operation = ENCRYPT; //1 is for encrypt 
@@ -460,7 +459,8 @@ static int encfs_create(const char* path, mode_t mode, struct fuse_file_info* fi
     res = creat(fullPath, mode);
     if(res == -1)
 	return -errno;
-
+	
+	//created files will have encrypted attr
 	res = lsetxattr(fullPath, "user.pa5-encfs.encrypted", "true", strlen("true"), XATTR_CREATE);
 
     close(res);
